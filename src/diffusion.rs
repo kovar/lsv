@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use rand::distributions::Standard;
 use rand::prelude::*;
 use rand_distr::StandardNormal;
@@ -24,7 +26,6 @@ const BUF_CAPACITY: usize = N_ITERS * N_SAMPLES * mem::size_of::<f64>();
 
 // output file
 const OUTPUT_FILE: &str = "output.txt";
-
 
 // equal chance of returning -1 or 1
 pub fn plus_or_minus() -> f64 {
