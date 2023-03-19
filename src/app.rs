@@ -73,16 +73,7 @@ impl eframe::App for TemplateApp {
         } = self;
 
         // let mut ls_default = Lorenz::default();
-        let mut ls_solution = Lorenz::new(
-            *x_0,
-            *y_0,
-            *z_0,
-            *t,
-            *dt,
-            *sigma,
-            *rho,
-            *beta,
-        );
+        let mut ls_solution = Lorenz::new(*x_0, *y_0, *z_0, *t, *dt, *sigma, *rho, *beta);
 
         // solve the Lorenz system
         // ls_default.solve();
@@ -174,8 +165,10 @@ impl eframe::App for TemplateApp {
             ui.separator();
 
             ui.heading("Initial Conditions");
-            ui.label("Time t always starts at 0.0, below you can set the maximum time.
-            Also, you can change the initial conditions for x, y and z.");
+            ui.label(
+                "Time t always starts at 0.0, below you can set the maximum time.
+            Also, you can change the initial conditions for x, y and z.",
+            );
 
             ui.add(egui::Slider::new(t, 0.0..=100.0).text("t"));
             ui.horizontal(|ui| {
@@ -246,19 +239,19 @@ impl eframe::App for TemplateApp {
                     ui.label(".");
                 });
 
-            ui.separator();
+                ui.separator();
 
-            // reset to default values
-            if ui.button("Reset").clicked() {
-                *x_0 = 1.0;
-                *y_0 = 1.0;
-                *z_0 = 1.0;
-                *sigma = 10.0;
-                *rho = 28.0;
-                *beta = 8.0 / 3.0;
-                *dt = 0.01;
-                *t = 50.0;
-            }
+                // reset to default values
+                if ui.button("Reset").clicked() {
+                    *x_0 = 1.0;
+                    *y_0 = 1.0;
+                    *z_0 = 1.0;
+                    *sigma = 10.0;
+                    *rho = 28.0;
+                    *beta = 8.0 / 3.0;
+                    *dt = 0.01;
+                    *t = 50.0;
+                }
             });
         });
 
@@ -273,8 +266,10 @@ impl eframe::App for TemplateApp {
             });
             ui.separator();
 
-            ui.label("Below is a 2D plot of the Lorenz system in the x-y plane. 
-            Double click to reset view.");
+            ui.label(
+                "Below is a 2D plot of the Lorenz system in the x-y plane. 
+            Double click to reset view.",
+            );
 
             let xy: egui::plot::PlotPoints = (0..n)
                 .map(|i| {
@@ -285,12 +280,12 @@ impl eframe::App for TemplateApp {
                 .collect();
 
             let xy_line = egui::plot::Line::new(xy);
-            
+
             egui::plot::Plot::new("Lorenz System XY")
-            // .width(420.0)
-            // .height(240.0)
-            .view_aspect(2.0)
-            .show(ui, |plot_ui| plot_ui.line(xy_line));
+                // .width(420.0)
+                // .height(240.0)
+                .view_aspect(2.0)
+                .show(ui, |plot_ui| plot_ui.line(xy_line));
         });
 
         if false {
