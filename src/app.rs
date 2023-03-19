@@ -5,7 +5,7 @@ use crate::models::lorenz::Lorenz;
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
     // Example stuff:
-    label: String,
+    // label: String,
 
     // this how you opt-out of serialization of a member
     #[serde(skip)]
@@ -22,7 +22,6 @@ pub struct TemplateApp {
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            label: "Default label".to_owned(),
             x: Vec::new(),
             y: Vec::new(),
             z: Vec::new(),
@@ -47,9 +46,35 @@ impl TemplateApp {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
 
-        // TODO: run computation here?
+        let Self {
+            x,
+            y,
+            z,
+            t,
+            dt,
+            sigma,
+            rho,
+            beta,
+        } = Self::default();
 
-        Default::default()
+        let mut ls_solution = Lorenz::new(x, y, z, t, dt, sigma, rho, beta);
+
+        // solve the Lorenz system
+        ls_solution.solve();
+
+        // Default::default() // use this to return default app state (without solving the lorenz system)
+
+        // return the solved Lorenz system
+        Self {
+            x: ls_solution.get_x().to_owned(),
+            y: ls_solution.get_y().to_owned(),
+            z: ls_solution.get_z().to_owned(),
+            t: ls_solution.get_t().to_owned(),
+            dt: ls_solution.get_dt().to_owned(),
+            sigma: ls_solution.get_sigma().to_owned(),
+            rho: ls_solution.get_rho().to_owned(),
+            beta: ls_solution.get_beta().to_owned(),
+        }
     }
 }
 
@@ -63,7 +88,6 @@ impl eframe::App for TemplateApp {
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let Self {
-            label,
             x,
             y,
             z,
