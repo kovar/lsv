@@ -1,3 +1,5 @@
+#![warn(unused_variables)]
+
 use crate::models::lorenz::Lorenz;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -46,35 +48,7 @@ impl TemplateApp {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
 
-        let Self {
-            x,
-            y,
-            z,
-            t,
-            dt,
-            sigma,
-            rho,
-            beta,
-        } = Self::default();
-
-        let mut ls_solution = Lorenz::new(x, y, z, t, dt, sigma, rho, beta);
-
-        // solve the Lorenz system
-        ls_solution.solve();
-
-        // Default::default() // use this to return default app state (without solving the lorenz system)
-
-        // return the solved Lorenz system
-        Self {
-            x: ls_solution.get_x().to_owned(),
-            y: ls_solution.get_y().to_owned(),
-            z: ls_solution.get_z().to_owned(),
-            t: ls_solution.get_t().to_owned(),
-            dt: ls_solution.get_dt().to_owned(),
-            sigma: ls_solution.get_sigma().to_owned(),
-            rho: ls_solution.get_rho().to_owned(),
-            beta: ls_solution.get_beta().to_owned(),
-        }
+        Default::default() // use this to return default app state (without solving the lorenz system)
     }
 }
 
@@ -97,6 +71,13 @@ impl eframe::App for TemplateApp {
             rho,
             beta,
         } = self;
+
+        let mut ls_default = Lorenz::default();
+
+        // solve the Lorenz system
+        ls_default.solve();
+
+        let n = ls_default.get_x().len();
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -185,6 +166,7 @@ impl eframe::App for TemplateApp {
                 *rho = 28.0;
                 *beta = 8.0 / 3.0;
                 *dt = 0.01;
+                *t = 10.0;
             }
 
             ui.separator();
@@ -206,7 +188,7 @@ impl eframe::App for TemplateApp {
             });
 
             if ui.button("Calculate").clicked() {
-                // number of steps n is len of t vector divided by dt
+                //
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -237,43 +219,32 @@ impl eframe::App for TemplateApp {
 
             ui.label("Below is a 2D plot of the Lorenz system. Double click to reset view.");
 
-            let sine: egui::plot::PlotPoints = (0..1000)
-                .map(|i| {
-                    let x = i as f64 * 0.01;
-                    [x, x.sin()]
-                })
-                .collect();
-
-            let cosine: egui::plot::PlotPoints = (0..1000)
-                .map(|i| {
-                    let x = i as f64 * 0.01;
-                    [x, x.cos()]
-                })
-                .collect();
-
-            let sine_line = egui::plot::Line::new(sine);
-            let cosine_line = egui::plot::Line::new(cosine)
-                .color(egui::Color32::from_rgb(0, 255, 0))
-                .name("Cosine");
-
-            ui.horizontal_wrapped(|ui| {
-                egui::plot::Plot::new("Sine")
-                    .view_aspect(2.0)
-                    .show(ui, |plot_ui| plot_ui.line(sine_line));
-                egui::plot::Plot::new("Cosine")
-                    .view_aspect(2.0)
-                    .show(ui, |plot_ui| plot_ui.line(cosine_line));
-            });
-            // egui::plot::Plot::new("Sine")
-            //     .view_aspect(2.0)
-            //     .show(ui, |plot_ui| plot_ui.line(sine_line));
-
-            // let _lorenz_xy: egui::plot::PlotPoints = (0..1000)
+            // let sine: egui::plot::PlotPoints = (0..1000)
             //     .map(|i| {
             //         let x = i as f64 * 0.01;
             //         [x, x.sin()]
             //     })
             //     .collect();
+
+            // let sine_line = egui::plot::Line::new(sine);
+
+            // egui::plot::Plot::new("Sine")
+            //     .view_aspect(2.0)
+            //     .show(ui, |plot_ui| plot_ui.line(sine_line));
+
+            let xy: egui::plot::PlotPoints = (0..n)
+                .map(|i| {
+                    let x = ls_default.get_x()[i];
+                    let y = ls_default.get_y()[i];
+                    [x, y]
+                })
+                .collect();
+
+            let xy_line = egui::plot::Line::new(xy);
+
+            egui::plot::Plot::new("Lorenz System")
+                .view_aspect(2.0)
+                .show(ui, |plot_ui| plot_ui.line(xy_line));
         });
 
         if false {
