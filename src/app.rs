@@ -24,9 +24,9 @@ pub struct TemplateApp {
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            x: Vec::new(),
-            y: Vec::new(),
-            z: Vec::new(),
+            x: vec![1.0],
+            y: vec![1.0],
+            z: vec![1.0],
             t: 10.0,
             dt: 0.01,
             sigma: 10.0,
@@ -72,24 +72,20 @@ impl eframe::App for TemplateApp {
         //     beta,
         // } = self;
 
-        // TODO: experiment with local variables only
-        let mut x = vec![1.0];
-        let mut y = vec![1.0];
-        let mut z = vec![1.0];
-        let mut t = 10.0;
-        let mut dt = 0.01;
-        let mut sigma = 10.0;
-        let mut rho = 28.0;
-        let mut beta = 8.0 / 3.0;
-
+        // don't store the data in the app struct, but in the model struct!
+        // copy the data from the app struct to the model struct, FIXME: temporarily
         let mut ls_default = Lorenz::default();
-        let mut ls_solution = Lorenz::new(x, y, z, t, dt, sigma, rho, beta);
+
+        let mut t = ls_default.t;
+        let mut dt = self.dt;
+        let mut sigma = self.sigma;
+        let mut rho = self.rho;
+        let mut beta = self.beta;
 
         // solve the Lorenz system
         ls_default.solve();
-        ls_solution.solve();
 
-        let n = ls_default.get_x().len();
+        let n = ls_default.x.len();
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -246,8 +242,8 @@ impl eframe::App for TemplateApp {
 
             let xy: egui::plot::PlotPoints = (0..n)
                 .map(|i| {
-                    let x = ls_solution.get_x()[i];
-                    let y = ls_solution.get_y()[i];
+                    let x = ls_default.x[i];
+                    let y = ls_default.x[i];
                     [x, y]
                 })
                 .collect();

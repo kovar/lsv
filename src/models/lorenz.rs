@@ -1,21 +1,21 @@
 #[derive(Debug, Clone)]
 pub struct Lorenz {
-    x: Vec<f64>,
-    y: Vec<f64>,
-    z: Vec<f64>,
-    t: f64,
-    dt: f64,
-    sigma: f64,
-    rho: f64,
-    beta: f64,
+    pub x: Vec<f64>,
+    pub y: Vec<f64>,
+    pub z: Vec<f64>,
+    pub t: f64,
+    pub dt: f64,
+    pub sigma: f64,
+    pub rho: f64,
+    pub beta: f64,
 }
 
 impl Default for Lorenz {
     fn default() -> Self {
         Self {
-            x: vec![0.0],
-            y: vec![0.0],
-            z: vec![0.0],
+            x: vec![1.0],
+            y: vec![1.0],
+            z: vec![1.0],
             t: 10.0,
             dt: 0.01,
             sigma: 10.0,
@@ -65,37 +65,5 @@ impl Lorenz {
             self.step();
             self.t -= self.dt;
         }
-    }
-
-    pub fn get_x(&self) -> &Vec<f64> {
-        &self.x
-    }
-
-    pub fn get_y(&self) -> &Vec<f64> {
-        &self.y
-    }
-
-    pub fn get_z(&self) -> &Vec<f64> {
-        &self.z
-    }
-
-    pub fn get_t(&self) -> &f64 {
-        &self.t
-    }
-
-    pub fn get_dt(&self) -> &f64 {
-        &self.dt
-    }
-
-    pub fn get_sigma(&self) -> &f64 {
-        &self.sigma
-    }
-
-    pub fn get_rho(&self) -> &f64 {
-        &self.rho
-    }
-
-    pub fn get_beta(&self) -> &f64 {
-        &self.beta
     }
 }
