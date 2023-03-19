@@ -10,6 +10,21 @@ pub struct Lorenz {
     beta: f64,
 }
 
+impl Default for Lorenz {
+    fn default() -> Self {
+        Self {
+            x: vec![0.0],
+            y: vec![0.0],
+            z: vec![0.0],
+            t: 10.0,
+            dt: 0.01,
+            sigma: 10.0,
+            rho: 28.0,
+            beta: 8.0 / 3.0,
+        }
+    }
+}
+    
 impl Lorenz {
     pub fn new(
         x: Vec<f64>,
