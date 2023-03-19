@@ -48,7 +48,7 @@ impl TemplateApp {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
 
-        Default::default() // use this to return default app state (without solving the lorenz system)
+        Default::default() // use this to return default app state (without solving the Lorenz system)
     }
 }
 
@@ -61,16 +61,26 @@ impl eframe::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let Self {
-            x,
-            y,
-            z,
-            t,
-            dt,
-            sigma,
-            rho,
-            beta,
-        } = self;
+        // let Self {
+        //     x,
+        //     y,
+        //     z,
+        //     t,
+        //     dt,
+        //     sigma,
+        //     rho,
+        //     beta,
+        // } = self;
+
+        // TODO: experiment with local variables only
+        let mut x = vec![0.0];
+        let mut y = vec![0.0];
+        let mut z = vec![0.0];
+        let mut t = 10.0;
+        let mut dt = 0.01;
+        let mut sigma = 10.0;
+        let mut rho = 28.0;
+        let mut beta = 8.0 / 3.0;
 
         let mut ls_default = Lorenz::default();
 
