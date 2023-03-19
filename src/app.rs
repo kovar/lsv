@@ -73,9 +73,9 @@ impl eframe::App for TemplateApp {
         // } = self;
 
         // TODO: experiment with local variables only
-        let mut x = vec![0.0];
-        let mut y = vec![0.0];
-        let mut z = vec![0.0];
+        let mut x = vec![1.0];
+        let mut y = vec![1.0];
+        let mut z = vec![1.0];
         let mut t = 10.0;
         let mut dt = 0.01;
         let mut sigma = 10.0;
@@ -83,9 +83,11 @@ impl eframe::App for TemplateApp {
         let mut beta = 8.0 / 3.0;
 
         let mut ls_default = Lorenz::default();
+        let mut ls_solution = Lorenz::new(x, y, z, t, dt, sigma, rho, beta);
 
         // solve the Lorenz system
         ls_default.solve();
+        ls_solution.solve();
 
         let n = ls_default.get_x().len();
 
@@ -114,87 +116,87 @@ impl eframe::App for TemplateApp {
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Simulation Settings");
 
-            ui.add(egui::Slider::new(sigma, 0.0..=20.0).text("σ"));
+            ui.add(egui::Slider::new(&mut sigma, 0.0..=20.0).text("σ"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease σ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *sigma -= 0.1);
+                    .then(|| sigma -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase σ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *sigma += 0.1);
+                    .then(|| sigma += 0.1);
             });
 
-            ui.add(egui::Slider::new(rho, 0.0..=50.0).text("ρ"));
+            ui.add(egui::Slider::new(&mut rho, 0.0..=50.0).text("ρ"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease ρ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *rho -= 0.1);
+                    .then(|| rho -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase ρ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *rho += 0.1);
+                    .then(|| rho += 0.1);
             });
 
-            ui.add(egui::Slider::new(beta, 0.0..=10.0).text("β"));
+            ui.add(egui::Slider::new(&mut beta, 0.0..=10.0).text("β"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease β by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *beta -= 0.1);
+                    .then(|| beta -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase β by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *beta += 0.1);
+                    .then(|| beta += 0.1);
             });
 
-            ui.add(egui::Slider::new(dt, 0.0..=0.1).text("dt"));
+            ui.add(egui::Slider::new(&mut dt, 0.0..=0.1).text("dt"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease dt by 0.001")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *dt -= 0.001);
+                    .then(|| dt -= 0.001);
                 ui.button("+")
                     .on_hover_text("Increase dt by 0.001")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *dt += 0.001);
+                    .then(|| dt += 0.001);
             });
 
             // reset to default values
             if ui.button("Reset").clicked() {
-                *sigma = 10.0;
-                *rho = 28.0;
-                *beta = 8.0 / 3.0;
-                *dt = 0.01;
-                *t = 10.0;
+                sigma = 10.0;
+                rho = 28.0;
+                beta = 8.0 / 3.0;
+                dt = 0.01;
+                t = 10.0;
             }
 
             ui.separator();
 
             ui.heading("Initial Conditions");
             ui.label("Time t always starts at 0.0, Below you can set the maximum time.");
-            ui.add(egui::Slider::new(t, 0.0..=100.0).text("t"));
+            ui.add(egui::Slider::new(&mut t, 0.0..=100.0).text("t"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease t by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *t -= 0.1);
+                    .then(|| t -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase t by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| *t += 0.1);
+                    .then(|| t += 0.1);
             });
 
             if ui.button("Calculate").clicked() {
@@ -244,13 +246,15 @@ impl eframe::App for TemplateApp {
 
             let xy: egui::plot::PlotPoints = (0..n)
                 .map(|i| {
-                    let x = ls_default.get_x()[i];
-                    let y = ls_default.get_y()[i];
+                    let x = ls_solution.get_x()[i];
+                    let y = ls_solution.get_y()[i];
                     [x, y]
                 })
                 .collect();
 
             let xy_line = egui::plot::Line::new(xy);
+
+            // println!("x: {:?}", ls_solution.get_x());
 
             egui::plot::Plot::new("Lorenz System")
                 .view_aspect(2.0)
