@@ -12,7 +12,7 @@ pub struct TemplateApp {
     x: Vec<f64>,
     y: Vec<f64>,
     z: Vec<f64>,
-    t: Vec<f64>,
+    t: f64,
     dt: f64,
     sigma: f64,
     rho: f64,
@@ -22,12 +22,11 @@ pub struct TemplateApp {
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
             label: "Default label".to_owned(),
             x: Vec::new(),
             y: Vec::new(),
             z: Vec::new(),
-            t: Vec::new(),
+            t: 10.0,
             dt: 0.01,
             sigma: 10.0,
             rho: 28.0,
@@ -47,6 +46,8 @@ impl TemplateApp {
         if let Some(storage) = cc.storage {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
+
+        // TODO: run computation here?
 
         Default::default()
     }
@@ -140,11 +141,48 @@ impl eframe::App for TemplateApp {
                     .then(|| *beta += 0.1);
             });
 
+            ui.add(egui::Slider::new(dt, 0.0..=0.1).text("dt"));
+            ui.horizontal(|ui| {
+                ui.button("-")
+                    .on_hover_text("Decrease dt by 0.001")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *dt -= 0.001);
+                ui.button("+")
+                    .on_hover_text("Increase dt by 0.001")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *dt += 0.001);
+            });
+
             // reset to default values
             if ui.button("Reset").clicked() {
                 *sigma = 10.0;
                 *rho = 28.0;
                 *beta = 8.0 / 3.0;
+                *dt = 0.01;
+            }
+
+            ui.separator();
+
+            ui.heading("Initial Conditions");
+            ui.label("Time t always starts at 0.0, Below you can set the maximum time.");
+            ui.add(egui::Slider::new(t, 0.0..=100.0).text("t"));
+            ui.horizontal(|ui| {
+                ui.button("-")
+                    .on_hover_text("Decrease t by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *t -= 0.1);
+                ui.button("+")
+                    .on_hover_text("Increase t by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *t += 0.1);
+            });
+
+            if ui.button("Calculate").clicked() {
+                // number of steps n is len of t vector divided by dt
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -174,7 +212,7 @@ impl eframe::App for TemplateApp {
             ui.separator();
 
             ui.label("Below is a 2D plot of the Lorenz system. Double click to reset view.");
-            
+
             let sine: egui::plot::PlotPoints = (0..1000)
                 .map(|i| {
                     let x = i as f64 * 0.01;
@@ -182,19 +220,36 @@ impl eframe::App for TemplateApp {
                 })
                 .collect();
 
-            let sine_line = egui::plot::Line::new(sine);
-            
-            egui::plot::Plot::new("Sine")
-                .view_aspect(2.0)
-                .show(ui, |plot_ui| plot_ui.line(sine_line));
-
-            let _lorenz_xy: egui::plot::PlotPoints = (0..1000)
+            let cosine: egui::plot::PlotPoints = (0..1000)
                 .map(|i| {
                     let x = i as f64 * 0.01;
-                    [x, x.sin()]
+                    [x, x.cos()]
                 })
                 .collect();
-            
+
+            let sine_line = egui::plot::Line::new(sine);
+            let cosine_line = egui::plot::Line::new(cosine)
+                .color(egui::Color32::from_rgb(0, 255, 0))
+                .name("Cosine");
+
+            ui.horizontal_wrapped(|ui| {
+                egui::plot::Plot::new("Sine")
+                    .view_aspect(2.0)
+                    .show(ui, |plot_ui| plot_ui.line(sine_line));
+                egui::plot::Plot::new("Cosine")
+                    .view_aspect(2.0)
+                    .show(ui, |plot_ui| plot_ui.line(cosine_line));
+            });
+            // egui::plot::Plot::new("Sine")
+            //     .view_aspect(2.0)
+            //     .show(ui, |plot_ui| plot_ui.line(sine_line));
+
+            // let _lorenz_xy: egui::plot::PlotPoints = (0..1000)
+            //     .map(|i| {
+            //         let x = i as f64 * 0.01;
+            //         [x, x.sin()]
+            //     })
+            //     .collect();
         });
 
         if false {
