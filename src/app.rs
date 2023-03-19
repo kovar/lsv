@@ -11,9 +11,9 @@ pub struct TemplateApp {
 
     // this how you opt-out of serialization of a member
     #[serde(skip)]
-    x: Vec<f64>,
-    y: Vec<f64>,
-    z: Vec<f64>,
+    x_0: f64,
+    y_0: f64,
+    z_0: f64,
     t: f64,
     dt: f64,
     sigma: f64,
@@ -24,10 +24,10 @@ pub struct TemplateApp {
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            x: vec![1.0],
-            y: vec![1.0],
-            z: vec![1.0],
-            t: 10.0,
+            x_0: 1.0,
+            y_0: 1.0,
+            z_0: 1.0,
+            t: 50.0,
             dt: 0.01,
             sigma: 10.0,
             rho: 28.0,
@@ -61,31 +61,34 @@ impl eframe::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // let Self {
-        //     x,
-        //     y,
-        //     z,
-        //     t,
-        //     dt,
-        //     sigma,
-        //     rho,
-        //     beta,
-        // } = self;
+        let Self {
+            x_0,
+            y_0,
+            z_0,
+            t,
+            dt,
+            sigma,
+            rho,
+            beta,
+        } = self;
 
-        // don't store the data in the app struct, but in the model struct!
-        // copy the data from the app struct to the model struct, FIXME: temporarily
-        let mut ls_default = Lorenz::default();
-
-        let mut t = ls_default.t;
-        let mut dt = self.dt;
-        let mut sigma = self.sigma;
-        let mut rho = self.rho;
-        let mut beta = self.beta;
+        // let mut ls_default = Lorenz::default();
+        let mut ls_solution = Lorenz::new(
+            *x_0,
+            *y_0,
+            *z_0,
+            *t,
+            *dt,
+            *sigma,
+            *rho,
+            *beta,
+        );
 
         // solve the Lorenz system
-        ls_default.solve();
+        // ls_default.solve();
+        ls_solution.solve();
 
-        let n = ls_default.x.len();
+        let n = ls_solution.x.len();
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -112,92 +115,123 @@ impl eframe::App for TemplateApp {
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Simulation Settings");
 
-            ui.add(egui::Slider::new(&mut sigma, 0.0..=20.0).text("σ"));
+            ui.add(egui::Slider::new(sigma, 0.0..=20.0).text("σ"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease σ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| sigma -= 0.1);
+                    .then(|| *sigma -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase σ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| sigma += 0.1);
+                    .then(|| *sigma += 0.1);
             });
 
-            ui.add(egui::Slider::new(&mut rho, 0.0..=50.0).text("ρ"));
+            ui.add(egui::Slider::new(rho, 0.0..=50.0).text("ρ"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease ρ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| rho -= 0.1);
+                    .then(|| *rho -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase ρ by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| rho += 0.1);
+                    .then(|| *rho += 0.1);
             });
 
-            ui.add(egui::Slider::new(&mut beta, 0.0..=10.0).text("β"));
+            ui.add(egui::Slider::new(beta, 0.0..=10.0).text("β"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease β by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| beta -= 0.1);
+                    .then(|| *beta -= 0.001);
                 ui.button("+")
                     .on_hover_text("Increase β by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| beta += 0.1);
+                    .then(|| *beta += 0.001);
             });
 
-            ui.add(egui::Slider::new(&mut dt, 0.0..=0.1).text("dt"));
+            ui.add(egui::Slider::new(dt, 0.001..=0.1).text("dt"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease dt by 0.001")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| dt -= 0.001);
+                    .then(|| *dt -= 0.001);
                 ui.button("+")
                     .on_hover_text("Increase dt by 0.001")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| dt += 0.001);
+                    .then(|| *dt += 0.001);
             });
-
-            // reset to default values
-            if ui.button("Reset").clicked() {
-                sigma = 10.0;
-                rho = 28.0;
-                beta = 8.0 / 3.0;
-                dt = 0.01;
-                t = 10.0;
-            }
 
             ui.separator();
 
             ui.heading("Initial Conditions");
-            ui.label("Time t always starts at 0.0, Below you can set the maximum time.");
-            ui.add(egui::Slider::new(&mut t, 0.0..=100.0).text("t"));
+            ui.label("Time t always starts at 0.0, below you can set the maximum time.
+            Also, you can change the initial conditions for x, y and z.");
+
+            ui.add(egui::Slider::new(t, 0.0..=100.0).text("t"));
             ui.horizontal(|ui| {
                 ui.button("-")
                     .on_hover_text("Decrease t by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| t -= 0.1);
+                    .then(|| *t -= 0.1);
                 ui.button("+")
                     .on_hover_text("Increase t by 0.1")
                     .on_hover_cursor(egui::CursorIcon::PointingHand)
                     .clicked()
-                    .then(|| t += 0.1);
+                    .then(|| *t += 0.1);
             });
 
-            if ui.button("Calculate").clicked() {
-                //
-            }
+            ui.add(egui::Slider::new(x_0, -20.0..=20.0).text("x₀"));
+            ui.horizontal(|ui| {
+                ui.button("-")
+                    .on_hover_text("Decrease x₀ by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *x_0 -= 0.1);
+                ui.button("+")
+                    .on_hover_text("Increase x₀ by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *x_0 += 0.1);
+            });
+
+            ui.add(egui::Slider::new(y_0, -20.0..=20.0).text("y₀"));
+            ui.horizontal(|ui| {
+                ui.button("-")
+                    .on_hover_text("Decrease y₀ by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *y_0 -= 0.1);
+                ui.button("+")
+                    .on_hover_text("Increase y₀ by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *y_0 += 0.1);
+            });
+
+            ui.add(egui::Slider::new(z_0, -20.0..=20.0).text("z₀"));
+            ui.horizontal(|ui| {
+                ui.button("-")
+                    .on_hover_text("Decrease z₀ by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *z_0 -= 0.1);
+                ui.button("+")
+                    .on_hover_text("Increase z₀ by 0.1")
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                    .then(|| *z_0 += 0.1);
+            });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
@@ -211,6 +245,20 @@ impl eframe::App for TemplateApp {
                     );
                     ui.label(".");
                 });
+
+            ui.separator();
+
+            // reset to default values
+            if ui.button("Reset").clicked() {
+                *x_0 = 1.0;
+                *y_0 = 1.0;
+                *z_0 = 1.0;
+                *sigma = 10.0;
+                *rho = 28.0;
+                *beta = 8.0 / 3.0;
+                *dt = 0.01;
+                *t = 50.0;
+            }
             });
         });
 
@@ -225,36 +273,24 @@ impl eframe::App for TemplateApp {
             });
             ui.separator();
 
-            ui.label("Below is a 2D plot of the Lorenz system. Double click to reset view.");
-
-            // let sine: egui::plot::PlotPoints = (0..1000)
-            //     .map(|i| {
-            //         let x = i as f64 * 0.01;
-            //         [x, x.sin()]
-            //     })
-            //     .collect();
-
-            // let sine_line = egui::plot::Line::new(sine);
-
-            // egui::plot::Plot::new("Sine")
-            //     .view_aspect(2.0)
-            //     .show(ui, |plot_ui| plot_ui.line(sine_line));
+            ui.label("Below is a 2D plot of the Lorenz system in the x-y plane. 
+            Double click to reset view.");
 
             let xy: egui::plot::PlotPoints = (0..n)
                 .map(|i| {
-                    let x = ls_default.x[i];
-                    let y = ls_default.x[i];
+                    let x = ls_solution.x[i];
+                    let y = ls_solution.y[i];
                     [x, y]
                 })
                 .collect();
 
             let xy_line = egui::plot::Line::new(xy);
-
-            // println!("x: {:?}", ls_solution.get_x());
-
-            egui::plot::Plot::new("Lorenz System")
-                .view_aspect(2.0)
-                .show(ui, |plot_ui| plot_ui.line(xy_line));
+            
+            egui::plot::Plot::new("Lorenz System XY")
+            // .width(420.0)
+            // .height(240.0)
+            .view_aspect(2.0)
+            .show(ui, |plot_ui| plot_ui.line(xy_line));
         });
 
         if false {
