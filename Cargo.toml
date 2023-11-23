@@ -21,6 +21,8 @@ egui_plot = "0.24.0"
 
 # You only need serde if you want app persistence:
 serde = { version = "1", features = ["derive"] }
+getrandom = { version = "0.2.8", features = ["js"] }
+log = "0.4.20"
 
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
