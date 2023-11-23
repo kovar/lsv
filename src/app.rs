@@ -1,6 +1,8 @@
 #![warn(unused_variables)]
 
 use crate::models::lorenz::Lorenz;
+use egui::ViewportCommand;
+use egui_plot;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -92,12 +94,12 @@ impl eframe::App for TemplateApp {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Quit").clicked() {
-                        _frame.close();
+                        ctx.send_viewport_cmd(ViewportCommand::Close);
                     }
                 });
                 ui.menu_button("Settings", |ui| {
                     if ui.button("DO NOT CLICK THIS").clicked() {
-                        _frame.close();
+                        ctx.send_viewport_cmd(ViewportCommand::Close);
                     }
                 });
             });
@@ -271,7 +273,7 @@ impl eframe::App for TemplateApp {
             Double click to reset view.",
             );
 
-            let xy: egui::plot::PlotPoints = (0..n)
+            let xy: egui_plot::PlotPoints = (0..n)
                 .map(|i| {
                     let x = ls_solution.x[i];
                     let y = ls_solution.y[i];
@@ -279,9 +281,9 @@ impl eframe::App for TemplateApp {
                 })
                 .collect();
 
-            let xy_line = egui::plot::Line::new(xy);
+            let xy_line = egui_plot::Line::new(xy);
 
-            egui::plot::Plot::new("Lorenz System XY")
+            egui_plot::Plot::new("Lorenz System XY")
                 // .width(420.0)
                 // .height(240.0)
                 .view_aspect(2.0)
